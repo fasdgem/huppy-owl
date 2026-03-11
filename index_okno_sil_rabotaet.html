@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Интерактивная карта по физике (7 класс)</title>
+  <style>
+    :root{--nav:#083c66;--paper:#fff8dc;--paper2:#fff3c4;--border:#8b5a2b;--text:#102033}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,sans-serif;background:#cfe8f5;color:var(--text)}
+    header{background:var(--nav);color:#fff;padding:16px;text-align:center}
+    .wrap{max-width:1280px;margin:18px auto;padding:0 16px}
+    .card{background:var(--paper);border:4px solid var(--border);border-radius:26px;overflow:hidden;box-shadow:0 14px 28px rgba(0,0,0,.18)}
+    .top{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:2px solid rgba(139,90,43,.3)}
+    .hint{font-size:14px}
+    .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .search,.btn{border:2px solid rgba(139,90,43,.5);border-radius:999px;padding:10px 14px;background:#fff7ef;font-weight:700}
+    .btn{cursor:pointer}
+    .scene{padding:14px}
+    svg{display:block;width:100%;height:auto;background:linear-gradient(#d7edf8 0 70%, #e2bf62 70% 100%);border:4px solid #ccb08a;border-radius:26px}
+    .label{font-size:20px;font-weight:900;fill:#fff;paint-order:stroke;stroke:#263238;stroke-width:5px}
+    .force-label{fill:#fff3a0;stroke:#9a1f00;stroke-width:6px;font-size:24px}
+    .obj-name{font-size:14px;font-weight:900;fill:#05386b}
+    .decor{pointer-events:none}
+    .hot{cursor:pointer}
+    .glow{transition:filter .18s ease}
+    .hot:hover .glow{filter:drop-shadow(0 0 12px rgba(255,70,70,.95))}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}
+    .modal.open{display:flex}
+    .modalCard{width:min(920px,96vw);max-height:90vh;overflow:auto;background:var(--paper);border:4px solid var(--border);border-radius:24px}
+    .modalTop{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:2px solid rgba(139,90,43,.3);position:sticky;top:0;background:#fffaf0}
+    .modalBody{padding:14px}
+    .title{text-align:center;font-size:24px;font-weight:900;color:#073763}
+    .section{background:#fffdf1;border:2px solid rgba(180,95,6,.45);border-radius:18px;padding:12px;margin:12px 0}
+    .section h3{margin:0 0 8px;color:#073763}
+    .formula{background:#222;color:#ffd966;padding:10px 12px;border-radius:12px;font-family:monospace;margin-top:8px}
+    .list{display:grid;gap:10px}
+    .item{background:var(--paper2);border:2px solid rgba(139,90,43,.45);border-radius:18px;padding:10px 12px;cursor:pointer}
+    .item b{display:block;color:#073763}
+    .crumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+    .crumb{padding:6px 10px;border-radius:999px;border:2px solid rgba(139,90,43,.35);background:#f5efe3;cursor:pointer;font-size:12px;font-weight:700}
+    .opts{display:grid;gap:8px}
+    .opt{padding:10px;border:2px solid rgba(7,55,99,.2);border-radius:12px;background:#fff;cursor:pointer;font-weight:700}
+    .opt.good{border-color:green}.opt.bad{border-color:crimson}
+    .result{margin-top:10px;font-weight:800}
+    @media (max-width:800px){.label{font-size:16px}.force-label{font-size:20px}}
+  </style>
+</head>
+<body>
+<header>
+  <h1>🌍 Интерактивная карта по физике</h1>
+  <div>Главная тема проекта — силы. На карте показаны предметы комнаты, но кликабельны только мяч и пружина.</div>
+</header>
+
+<div class="wrap">
+  <section class="card">
+    <div class="top">
+      <div class="hint">💡 Кликни по <b>мячу</b> или <b>пружине</b>, чтобы открыть раздел про силы.</div>
+      <div class="controls">
+        <input class="search" id="search" placeholder="Поиск по силам..."/>
+        <button class="btn" id="homeBtn">🏠 Главный экран</button>
+      </div>
+    </div>
+    <div class="scene">
+      <svg viewBox="0 0 1200 640" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="1200" height="640" fill="#d7edf8"/>
+        <rect x="0" y="440" width="1200" height="200" fill="#e2bf62"/>
+
+        <g class="decor">
+          <rect x="70" y="80" width="260" height="170" rx="20" fill="#3aa69a" stroke="#2e8077" stroke-width="4"/>
+          <line x1="200" y1="80" x2="200" y2="250" stroke="#bff3ff" stroke-width="6"/>
+          <line x1="70" y1="165" x2="330" y2="165" stroke="#bff3ff" stroke-width="6"/>
+          <text x="110" y="58" class="obj-name">Окно</text>
+          <text x="72" y="290" class="label">2) Строение вещества</text>
+        </g>
+
+        <g class="decor">
+          <rect x="410" y="85" width="250" height="26" rx="12" fill="#9b6b3f"/>
+          <rect x="435" y="45" width="48" height="42" rx="8" fill="#ff6b6b" stroke="#b54444" stroke-width="3"/>
+          <rect x="488" y="35" width="48" height="52" rx="8" fill="#ffd166" stroke="#c39a31" stroke-width="3"/>
+          <rect x="542" y="40" width="48" height="47" rx="8" fill="#06d6a0" stroke="#15906f" stroke-width="3"/>
+          <rect x="596" y="44" width="38" height="43" rx="8" fill="#4cc9f0" stroke="#368fb1" stroke-width="3"/>
+          <text x="480" y="30" class="obj-name">Полка</text>
+          <text x="420" y="178" class="label">1) Основные понятия</text>
+        </g>
+
+        <g class="decor">
+          <circle cx="735" cy="105" r="38" fill="#ffe599" stroke="#c9a54a" stroke-width="4"/>
+          <path d="M735 76 L718 108 L736 108 L724 136 L753 102 L738 102 Z" fill="#b45f06"/>
+          <rect x="721" y="138" width="28" height="18" rx="6" fill="#8c6239"/>
+          <text x="690" y="58" class="obj-name">Лампа</text>
+          <text x="650" y="215" class="label">6) Работа и энергия</text>
+        </g>
+
+        <g class="decor">
+          <rect x="980" y="92" width="100" height="195" rx="24" fill="#9c89b8"/>
+          <circle cx="1030" cy="145" r="28" fill="#fff" stroke="#7a668f" stroke-width="4"/>
+          <line x1="1030" y1="145" x2="1047" y2="130" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="1030" cy="145" r="3" fill="#333"/>
+          <text x="960" y="58" class="obj-name">Барометр</text>
+          <text x="880" y="380" class="label">5) Давление</text>
+        </g>
+
+        <g class="decor">
+          <rect x="350" y="305" width="510" height="42" rx="18" fill="#a77a4b"/>
+          <rect x="390" y="346" width="34" height="116" rx="16" fill="#8b5a2b"/>
+          <rect x="790" y="346" width="34" height="116" rx="16" fill="#8b5a2b"/>
+        </g>
+
+        <g class="hot" data-key="interaction">
+          <path class="glow" d="M475 262 q12 -16 24 0 q12 16 24 0 q12 -16 24 0 q12 16 24 0 q12 -16 24 0 q12 16 24 0 q12 -16 24 0 q12 16 24 0"
+                stroke="#7a5628" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <circle cx="475" cy="262" r="8" fill="#7a5628"/>
+          <circle cx="667" cy="262" r="8" fill="#7a5628"/>
+          <text x="512" y="238" class="obj-name">Пружина</text>
+        </g>
+
+        <g class="hot" data-key="interaction">
+          <circle class="glow" cx="190" cy="380" r="42" fill="#f5cc5c" stroke="#cda640" stroke-width="4"/>
+          <path d="M176 369 q14 -20 35 -8" stroke="#fff5d9" stroke-width="8" fill="none" stroke-linecap="round"/>
+          <text x="136" y="330" class="label force-label">4) СИЛЫ</text>
+          <text x="168" y="445" class="obj-name">Мяч</text>
+        </g>
+
+        <g class="decor">
+          <rect x="900" y="472" width="170" height="58" rx="18" fill="#f4a261" stroke="#d07d32" stroke-width="4"/>
+          <rect x="935" y="440" width="96" height="38" rx="14" fill="#ffd06b" stroke="#d6a84d" stroke-width="3"/>
+          <circle cx="940" cy="534" r="18" fill="#333"/>
+          <circle cx="1030" cy="534" r="18" fill="#333"/>
+          <circle cx="940" cy="534" r="8" fill="#bbb"/>
+          <circle cx="1030" cy="534" r="8" fill="#bbb"/>
+          <text x="940" y="430" class="obj-name">Машина</text>
+          <text x="820" y="440" class="label">3) Механическое движение</text>
+        </g>
+
+        <g class="decor">
+          <polygon points="120,560 420,560 390,610 150,610" fill="#ea7d7d"/>
+          <polygon points="160,560 330,528 338,546 170,578" fill="#cc6464" opacity=".35"/>
+          <polygon points="230,520 410,550 402,572 222,542" fill="#d86161" stroke="#a94444" stroke-width="3"/>
+          <polygon points="245,548 280,600 315,548" fill="#8b5a2b"/>
+          <text x="88" y="488" class="label">7) Простые механизмы</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modalCard">
+    <div class="modalTop">
+      <div><b>Всплывающее окно:</b> теория, формулы, виды сил и мини‑тест.</div>
+      <div class="controls">
+        <button class="btn" id="backBtn">⬅ Назад</button>
+        <button class="btn" id="closeBtn">✖ Закрыть</button>
+      </div>
+    </div>
+    <div class="modalBody">
+      <div class="title" id="panelTitle"></div>
+      <div class="crumbs" id="crumbs"></div>
+      <div id="panelContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  interaction: {
+    title: "4. Взаимодействие тел",
+    intro: "Главная часть проекта — силы. В этом разделе собраны основные силы, изучаемые в 7 классе.",
+    bullets: ["Кликабельный подпункт ниже открывает все силы проекта."],
+    children: ["interaction_forces"]
+  },
+  interaction_forces: {
+    title: "4.2 Силы в механике",
+    intro: "Здесь собраны все основные силы проекта: сила тяжести, сила упругости, вес тела, сила реакции опоры, сила натяжения нити и сила трения.",
+    children: ["force_grav","force_elastic","force_weight","force_support","force_tension","force_friction"]
+  },
+  force_grav: {
+    title: "4.2.1 Сила тяжести (Fтяж)",
+    intro: "Сила тяжести — сила гравитационного происхождения. Она обусловлена законом всемирного тяготения и направлена всегда к центру Земли.",
+    formula: "F = m · g, где m — масса тела, g ≈ 9,8 м/с²",
+    bullets: ["действует на все тела у поверхности Земли","направлена к центру Земли","является проявлением силы тяготения"],
+    fact: "Именно сила тяжести заставляет предметы падать вниз.",
+    quiz:{q:"Какая сила направлена к центру Земли?", options:["Сила тяжести","Сила трения","Сила упругости"], correct:0, explain:"К центру Земли направлена сила тяжести."}
+  },
+  force_elastic: {
+    title: "4.2.2 Сила упругости (Fупр)",
+    intro: "Сила упругости проявляется при механическом воздействии на твёрдые тела, жидкости и газы. Она возникает из-за электромагнитного взаимодействия молекул вещества.",
+    formula: "F = k · x",
+    bullets: ["возникает при растяжении, сжатии или изгибе","стремится вернуть тело в первоначальное состояние","подчиняется закону Гука"],
+    fact: "Когда мы растягиваем пружину, появляется сила упругости, которая тянет её обратно.",
+    quiz:{q:"Какая сила возвращает деформированное тело в исходное состояние?", options:["Сила тяжести","Сила упругости","Сила трения"], correct:1, explain:"Это делает сила упругости."}
+  },
+  force_weight: {
+    title: "4.2.3 Вес тела (P)",
+    intro: "Вес тела — сила, с которой тело давит на горизонтальную опору или растягивает вертикальный подвес.",
+    formula: "Вес может изменяться при движении с ускорением",
+    bullets: ["вес — это сила, а масса — физическая величина","вес может изменяться при движении с ускорением","в состоянии свободного падения возникает невесомость"],
+    fact: "Масса тела остаётся постоянной, а вес может меняться.",
+    quiz:{q:"Что может изменяться при ускоренном движении: масса или вес?", options:["Только масса","Только вес","И масса, и вес"], correct:1, explain:"При ускорении может изменяться вес тела."}
+  },
+  force_support: {
+    title: "4.2.4 Сила реакции опоры (N)",
+    intro: "Сила реакции опоры — сила, с которой опора действует на тело, находящееся на её поверхности.",
+    formula: "В покое на горизонтальной поверхности: N = Fтяж",
+    bullets: ["направлена перпендикулярно поверхности","препятствует проникновению тела в опору","в покое на горизонтальной поверхности равна силе тяжести"],
+    fact: "Если книга лежит на столе, стол действует на неё силой реакции опоры.",
+    quiz:{q:"Как направлена сила реакции опоры?", options:["Вдоль поверхности","Перпендикулярно поверхности","К центру Земли"], correct:1, explain:"Она направлена перпендикулярно поверхности."}
+  },
+  force_tension: {
+    title: "4.2.5 Сила натяжения нити",
+    intro: "Сила натяжения нити является частным случаем силы упругости. Она возникает вследствие деформации нити и всегда направлена вдоль подвеса, в сторону уменьшения деформации.",
+    formula: "Направлена вдоль нити или подвеса",
+    bullets: ["возникает при натяжении нити, верёвки или троса","направлена вдоль подвеса","направлена против деформации"],
+    fact: "Когда ведро поднимают на верёвке, на него действует сила натяжения нити.",
+    quiz:{q:"Куда направлена сила натяжения нити?", options:["Вдоль нити","Перпендикулярно нити","Вниз"], correct:0, explain:"Сила натяжения направлена вдоль нити."}
+  },
+  force_friction: {
+    title: "4.2.6 Сила трения (Fтр)",
+    intro: "Сила трения возникает в плоскости касания тел. Основными причинами трения являются шероховатость поверхностей и взаимное притяжение молекул. Трение всегда направлено против движения.",
+    formula: "Для трения скольжения: Fтр = μ · N",
+    bullets: ["уменьшает эффективность механизмов, но часто бывает полезным","делится на трение покоя, скольжения и качения"],
+    fact: "Без трения человек не смог бы ходить, а машина — тормозить.",
+    quiz:{q:"В каком направлении действует сила трения?", options:["По направлению движения","Против движения","Перпендикулярно поверхности"], correct:1, explain:"Сила трения направлена против движения."},
+    children: ["friction_rest","friction_slide","friction_roll"]
+  },
+  friction_rest: {
+    title: "Трение покоя",
+    intro: "Трение покоя — сила, препятствующая началу движения. Именно благодаря ей предметы остаются на своих местах, а мы можем ходить по земле.",
+    bullets: ["мешает телу начать движение","удерживает предметы на месте","помогает человеку ходить"]
+  },
+  friction_slide: {
+    title: "Трение скольжения",
+    intro: "Трение скольжения возникает, когда одно тело движется по поверхности другого. Оно всегда больше трения качения.",
+    formula: "Fтр = μ · N",
+    bullets: ["появляется при скольжении поверхностей","зависит от силы прижатия и свойств поверхностей","обычно больше трения качения"]
+  },
+  friction_roll: {
+    title: "Трение качения",
+    intro: "Трение качения проявляется при катании одного тела по другому, например колеса по дороге.",
+    bullets: ["обычно меньше трения скольжения","использование колёс и подшипников уменьшает вредное влияние трения","важно в технике и транспорте"]
+  }
+};
+
+let stack = [];
+const modal = document.getElementById('modal');
+const titleEl = document.getElementById('panelTitle');
+const contentEl = document.getElementById('panelContent');
+const crumbsEl = document.getElementById('crumbs');
+const searchEl = document.getElementById('search');
+
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
+
+document.querySelectorAll('.hot').forEach(h=>{
+  h.addEventListener('click',()=>openNode('interaction', true));
+});
+document.getElementById('homeBtn').onclick = ()=>{ stack=[]; modal.classList.remove('open'); };
+document.getElementById('closeBtn').onclick = ()=> modal.classList.remove('open');
+document.getElementById('backBtn').onclick = ()=>{
+  if(stack.length<=1){ stack=[]; modal.classList.remove('open'); return; }
+  stack.pop();
+  openNode(stack[stack.length-1], false);
+};
+modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+
+function renderCrumbs(){
+  crumbsEl.innerHTML='';
+  stack.forEach((key,i)=>{
+    const c=document.createElement('div');
+    c.className='crumb';
+    c.textContent=DATA[key].title.replace(/^\d+(\.\d+)*\.\s*/,'');
+    c.onclick=()=>{ stack=stack.slice(0,i+1); openNode(stack[stack.length-1], false); };
+    crumbsEl.appendChild(c);
+  });
+}
+
+function renderQuiz(q){
+  if(!q) return '';
+  return `<div class="section"><h3>Мини‑тест</h3><div><b>${esc(q.q)}</b></div>
+    <div class="opts" id="opts">${q.options.map((o,i)=>`<div class="opt" data-i="${i}">${esc(o)}</div>`).join('')}</div>
+    <div class="result" id="result"></div></div>`;
+}
+function wireQuiz(q){
+  if(!q) return;
+  const opts=document.querySelectorAll('#opts .opt');
+  const result=document.getElementById('result');
+  opts.forEach(el=>el.onclick=()=>{
+    opts.forEach(x=>x.classList.remove('good','bad'));
+    const i=Number(el.dataset.i);
+    if(i===q.correct){el.classList.add('good'); result.textContent='Верно! '+q.explain; result.style.color='green';}
+    else {el.classList.add('bad'); result.textContent='Неверно. '+q.explain; result.style.color='crimson';}
+  });
+}
+
+function openNode(key,push){
+  if(push) stack.push(key);
+  const n=DATA[key];
+  titleEl.textContent=n.title;
+  renderCrumbs();
+  const children=(n.children||[]).map(k=>`<div class="item" data-k="${k}"><b>${esc(DATA[k].title)}</b><span>${esc(DATA[k].intro||'')}</span></div>`).join('');
+  contentEl.innerHTML = `
+    <div class="section"><h3>Теория</h3><p>${esc(n.intro||'')}</p>
+      ${(n.bullets||[]).length?`<ul>${n.bullets.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+      ${n.formula?`<div class="formula">${esc(n.formula)}</div>`:''}
+    </div>
+    ${n.fact?`<div class="section"><h3>Интересный факт</h3><p>${esc(n.fact)}</p></div>`:''}
+    ${(n.children||[]).length?`<div class="section"><h3>Подразделы</h3><div class="list">${children}</div></div>`:''}
+    ${renderQuiz(n.quiz)}
+  `;
+  contentEl.querySelectorAll('[data-k]').forEach(el=>el.onclick=()=>openNode(el.dataset.k,true));
+  wireQuiz(n.quiz);
+  modal.classList.add('open');
+}
+
+searchEl.addEventListener('keydown', (e)=>{
+  if(e.key !== 'Enter') return;
+  const q = searchEl.value.trim().toLowerCase();
+  if(!q) return;
+  const found = Object.keys(DATA).find(k => ((DATA[k].title||'')+' '+(DATA[k].intro||'')).toLowerCase().includes(q));
+  if(found){ stack=[]; openNode(found, true); }
+});
+</script>
+</body>
+</html>
